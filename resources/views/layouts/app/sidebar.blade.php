@@ -1,41 +1,90 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
-                <flux:sidebar.collapse class="lg:hidden" />
+    <body class="min-h-screen bg-[#f3f5f7] text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+        @php
+            $visitorNavItems = [
+                [
+                    'label' => __('Dashboard'),
+                    'icon' => 'squares-2x2',
+                    'href' => route('dashboard'),
+                    'active' => request()->routeIs('dashboard'),
+                    'navigate' => true,
+                ],
+                [
+                    'label' => __('Add New Visitor'),
+                    'icon' => 'user-plus',
+                    'href' => url('/visitors/create'),
+                    'active' => request()->is('visitors/create'),
+                    'navigate' => false,
+                ],
+                [
+                    'label' => __('Visitor List'),
+                    'icon' => 'calendar-days',
+                    'href' => url('/visitors'),
+                    'active' => request()->is('visitors'),
+                    'navigate' => false,
+                ],
+                [
+                    'label' => __('Report'),
+                    'icon' => 'chart-bar-square',
+                    'href' => url('/reports'),
+                    'active' => request()->is('reports*'),
+                    'navigate' => false,
+                ],
+                [
+                    'label' => __('Notifications'),
+                    'icon' => 'bell',
+                    'href' => url('/notifications'),
+                    'active' => request()->is('notifications*'),
+                    'navigate' => false,
+                ],
+                [
+                    'label' => __('Setting'),
+                    'icon' => 'cog-6-tooth',
+                    'href' => route('profile.edit'),
+                    'active' => request()->is('settings*'),
+                    'navigate' => true,
+                ],
+            ];
+        @endphp
+
+        <flux:sidebar sticky collapsible="mobile" class="visitor-sidebar border-0 bg-[#315f66] px-4 py-5 text-white lg:w-[242px]">
+            <flux:sidebar.header class="mb-7 flex items-center justify-center p-0">
+                <a href="{{ route('dashboard') }}" class="text-[32px] font-extrabold italic leading-none tracking-normal text-white" wire:navigate>
+                    visitor
+                </a>
+                <flux:sidebar.collapse class="absolute right-3 top-4 text-white lg:hidden" />
             </flux:sidebar.header>
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
-            </flux:sidebar.nav>
+            <nav class="grid gap-2" aria-label="{{ __('Visitor management') }}">
+                @foreach ($visitorNavItems as $item)
+                    <a
+                        href="{{ $item['href'] }}"
+                        @if ($item['navigate']) wire:navigate @endif
+                        @class([
+                            'flex h-10 items-center gap-4 rounded-md px-4 text-[15px] font-bold leading-none transition',
+                            'bg-white text-[#315f66] shadow-sm' => $item['active'],
+                            'text-white hover:bg-white/10' => ! $item['active'],
+                        ])
+                    >
+                        <flux:icon :name="$item['icon']" class="size-5 shrink-0" />
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+
+            </nav>
 
             <flux:spacer />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            <x-desktop-user-menu class="visitor-user-menu hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+        <flux:header class="border-b border-[#315f66]/20 bg-white lg:hidden">
+            <flux:sidebar.toggle class="lg:hidden text-[#315f66]" icon="bars-2" inset="left" />
 
             <flux:spacer />
 
@@ -67,6 +116,9 @@
                     <flux:menu.radio.group>
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                             {{ __('Settings') }}
+                        </flux:menu.item>
+                        <flux:menu.item :href="route('appearance.edit')" icon="moon" wire:navigate>
+                            {{ __('Appearance') }}
                         </flux:menu.item>
                     </flux:menu.radio.group>
 
